@@ -1,4 +1,4 @@
-(kicad_pcb (version 20171130) (host pcbnew "(5.1.4)-1")
+(kicad_pcb (version 20171130) (host pcbnew 5.1.5-52549c5~84~ubuntu19.10.1)
 
   (general
     (thickness 1.6)
@@ -950,7 +950,7 @@
     )
   )
 
-  (module josh-passives-smt:Ferrite_Bead_0603 (layer F.Cu) (tedit 5D1EFF98) (tstamp 5DD57FF9)
+  (module josh-passives-smt:Ferrite_Bead_0603 (layer F.Cu) (tedit 5D1EFF98) (tstamp 5DE0E278)
     (at 141.2 99.3 180)
     (descr BLM18KG_S)
     (tags "Ferrite Bead")
@@ -3850,11 +3850,6 @@
   (gr_line (start 158 111) (end 158.016732 116.028762) (layer Edge.Cuts) (width 0.05) (tstamp 5DD4F5AB))
   (gr_line (start 158.0172 98.2) (end 158 103.2) (layer Edge.Cuts) (width 0.05))
 
-  (via (at 153.4 109.5) (size 0.5) (drill 0.25) (layers F.Cu B.Cu) (net 2))
-  (via (at 154 109.5) (size 0.5) (drill 0.25) (layers F.Cu B.Cu) (net 2))
-  (via (at 154.6 109.5) (size 0.5) (drill 0.25) (layers F.Cu B.Cu) (net 2))
-  (via (at 155.2 109.5) (size 0.5) (drill 0.25) (layers F.Cu B.Cu) (net 2))
-  (via (at 155.8 109.5) (size 0.5) (drill 0.25) (layers F.Cu B.Cu) (net 2))
   (segment (start 118.265 101.4) (end 118.3 101.365) (width 0.25) (layer F.Cu) (net 1))
   (segment (start 117.1 101.4) (end 118.265 101.4) (width 0.25) (layer F.Cu) (net 1))
   (segment (start 120.945 104.205) (end 120.95 104.2) (width 0.25) (layer F.Cu) (net 1))
@@ -3862,6 +3857,11 @@
   (segment (start 120.95 104.2) (end 120.95 102.25) (width 0.25) (layer F.Cu) (net 1))
   (segment (start 120.065 101.365) (end 118.3 101.365) (width 0.25) (layer F.Cu) (net 1))
   (segment (start 120.95 102.25) (end 120.065 101.365) (width 0.25) (layer F.Cu) (net 1))
+  (via (at 153.4 109.5) (size 0.5) (drill 0.25) (layers F.Cu B.Cu) (net 2))
+  (via (at 154 109.5) (size 0.5) (drill 0.25) (layers F.Cu B.Cu) (net 2))
+  (via (at 154.6 109.5) (size 0.5) (drill 0.25) (layers F.Cu B.Cu) (net 2))
+  (via (at 155.2 109.5) (size 0.5) (drill 0.25) (layers F.Cu B.Cu) (net 2))
+  (via (at 155.8 109.5) (size 0.5) (drill 0.25) (layers F.Cu B.Cu) (net 2))
   (via (at 145.8 106.8) (size 0.5) (drill 0.25) (layers F.Cu B.Cu) (net 2))
   (via (at 145.8 105.8) (size 0.5) (drill 0.25) (layers F.Cu B.Cu) (net 2))
   (segment (start 145.785 105.2) (end 145.785 105.785) (width 0.25) (layer F.Cu) (net 2))
