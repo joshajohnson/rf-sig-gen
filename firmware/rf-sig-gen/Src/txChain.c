@@ -69,7 +69,7 @@ void setAttenuation(float atten, struct txStruct *txStatus)
 
 	// Init attenuator LE high
 	HAL_GPIO_WritePin(ATTEN_LE_GPIO_Port,ATTEN_LE_Pin,1);
-	DWT_Delay_us(10);
+	DWT_Delay_us(1);
 	// Begin by bringing LE low
 	HAL_GPIO_WritePin(ATTEN_LE_GPIO_Port, ATTEN_LE_Pin, 0);
 	DWT_Delay_us(1);
@@ -112,10 +112,11 @@ void setOutputPower(float setPower, struct MAX2871Struct *max2871Status, struct 
 				setAttenuation(txStatus->attenuation += STEP_ATTENUATION, txStatus);
 				DWT_Delay_us(1);
 				readAD8319(txStatus);
+				printUSB((char *) "+ Adjusting Attenuation!\r\n");
 			}
 			else
 			{
-				printUSB((char *) "> Ran out of attenuation!\r\n");
+				printUSB((char *) "+ Ran out of attenuation!\r\n");
 				break;
 			}
 		}
@@ -131,10 +132,11 @@ void setOutputPower(float setPower, struct MAX2871Struct *max2871Status, struct 
 				setAttenuation(txStatus->attenuation -= STEP_ATTENUATION, txStatus);
 				DWT_Delay_us(1);
 				readAD8319(txStatus);
+				printUSB((char *) "+ Adjusting Attenuation!\r\n");
 			}
 			else
 			{
-				printUSB((char *) "> Ran out of attenuation!\r\n");
+				printUSB((char *) "+ Ran out of attenuation!\r\n");
 				break;
 			}
 		}

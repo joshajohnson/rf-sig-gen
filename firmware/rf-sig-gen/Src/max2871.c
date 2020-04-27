@@ -181,7 +181,7 @@ void max2871SetFrequency(float mhz, uint8_t intN, struct MAX2871Struct *max2871S
 	else if (mhz < 6000)
 		diva = 0;
 	else
-		printUSB((char *) "> Bad input frequency to max2871SetFrequency\r\n");
+		printUSB((char *) "+ Bad input frequency to max2871SetFrequency\r\n");
 
 	// Calculate fOUT
 	float fComp = 38.4;
