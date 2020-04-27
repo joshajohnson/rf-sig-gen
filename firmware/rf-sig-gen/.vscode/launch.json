@@ -1,0 +1,13 @@
+{
+  "configurations": [
+    {
+      "cwd": "${workspaceRoot}",
+      "executable": "build/rf-sig-gen.elf",
+      "name": "Debug Microcontroller",
+      "request": "launch",
+      "type": "cortex-debug",
+      "servertype": "stutil",
+      "preLaunchTask": "build"
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+    "files.associations": {
+        "usbd_cdc_if.h": "c",
+        "dwt_stm32_delay.h": "c",
+        "commandparser.h": "c",
+        "max2871.h": "c",
+        "main.h": "c",
+        "random": "c",
+        "txchain.h": "c",
+        "stp08cp05.h": "c",
+        "stdio.h": "c"
+    }
+}
