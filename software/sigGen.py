@@ -11,7 +11,9 @@ class SignalGenerator:
         self.serial = None
         self.serial_io = None
         self.serial_recv_line = None
-        self.serial_data = []
+        self.serial_user_data = []
+        self.serial_rf_data = []
+        self.serial_log_data = []
 
         # Argparse
         self.parser = None
@@ -80,17 +82,26 @@ class SignalGenerator:
         self.serial_io.flush()
 
 
-    def get_line(self):
-        """ Gets line of data from Signal Generator """
-        self.serial_recv_line = self.serial_io.readline().rstrip()
-        return self.serial_recv_line
-
-
-    def get_lines(self):
-        """ Gets multiple lines from Signal Generator, until timeout is hit """
+    def get_data(self, type = "user"):
+        """ Gets multiple user directed lines from Signal Generator, until timeout is hit """
         raw_recv = self.serial_io.readlines()
-        self.serial_data = []
-        [self.serial_data.append(line.rstrip()) for line in raw_recv]
+        self.serial_user_data = []
+        self.serial_rf_data = []
+        self.serial_log_data = []
+        for line in raw_recv:
+            if line[0] == ">":
+                self.serial_user_data.append(line.rstrip())
+            if line[0] == "+":
+                self.serial_log_data.append(line.rstrip())
+            if line[0] == "?":
+                self.serial_rf_data.append(line.rstrip())
+    
+        if type == "user":
+            return self.serial_user_data
+        if type == "log":
+            return self.serial_log_data
+        if type == "rf":
+            return self.serial_log_data
             
 
     def talk(self):
@@ -105,7 +116,7 @@ class SignalGenerator:
                 if user_input.lower == "exit":
                     break
                 self.send_data(user_input)
-                self.get_lines()
+                self.get_data()
                 [print(line) for line in self.serial_data]
 
     def config_sig_gen(self, frequency = None, power = None):
@@ -210,8 +221,8 @@ if __name__ == '__main__':
             if sig_gen.mode == "sweep":
                 sig_gen.config_sweep()
 
-            print(sig_gen.get_line())
-        
+            [print(line) for line in sig_gen.get_data("user")]
+
         except:
             pass
 
