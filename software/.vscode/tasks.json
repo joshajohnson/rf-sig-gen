@@ -11,7 +11,7 @@
             "group": "build",
             "presentation": {
                 // Reveal the output only if unrecognized errors occur.
-                "reveal": "silent"
+                // "reveal": "silent"
             },
             // Use the standard MS compiler pattern to detect errors, warnings and infos
             "problemMatcher": "$msCompile"
