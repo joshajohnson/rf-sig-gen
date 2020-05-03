@@ -6,7 +6,7 @@
         {
             "label": "build",
             "command": "${config:python.pythonPath}",
-            "args": [ "sigGen.py"
+            "args": [ "siggen.py"
             ],
             "group": "build",
             "presentation": {
