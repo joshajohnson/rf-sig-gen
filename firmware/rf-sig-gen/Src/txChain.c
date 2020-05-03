@@ -12,6 +12,8 @@ extern ADC_HandleTypeDef hadc1;
 
 struct txStruct txStatus;
 
+char buf[128] = "";
+
 // Sets up output for given frequency and power level
 void sigGen(float frequency, float power, struct MAX2871Struct *max2871Status, struct txStruct *txStatus)
 {
@@ -26,6 +28,9 @@ void sigGen(float frequency, float power, struct MAX2871Struct *max2871Status, s
 	// Don't go any further until PLL has lock
 
 	setOutputPower(power, max2871Status, txStatus);
+
+	sprintf((char *)buf, "? %0.3f %0.2f \n", max2871Status->frequency, txStatus->measOutputPower);
+	printUSB(buf);
 }
 
 // Sweeps through frequencies

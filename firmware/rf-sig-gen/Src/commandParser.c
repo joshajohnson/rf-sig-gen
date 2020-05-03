@@ -81,7 +81,6 @@ void commandParser(struct MAX2871Struct *max2871Status, struct txStruct *txStatu
 		}
 	}
 
-
 	else if (strncmp("enableRF", command, 8) == 0)
 	{
 		max2871RFEnable(max2871Status);
