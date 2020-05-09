@@ -114,9 +114,7 @@ void max2871SpiWrite(uint32_t r)
 	for (int8_t bit = 32; bit > 0; bit--)
 	{
 		HAL_GPIO_WritePin(MAX_DAT_GPIO_Port, MAX_DAT_Pin, ((r) & (1 << bit - 1)) ? 1 : 0);
-		DWT_Delay_us(1);
 		HAL_GPIO_WritePin(MAX_CLK_GPIO_Port, MAX_CLK_Pin, 1);
-		DWT_Delay_us(1);
 		HAL_GPIO_WritePin(MAX_CLK_GPIO_Port, MAX_CLK_Pin, 0);
 	}
 
@@ -124,7 +122,6 @@ void max2871SpiWrite(uint32_t r)
 	HAL_GPIO_WritePin(MAX_DAT_GPIO_Port, MAX_DAT_Pin, 0);
 	// Once Transfer complete, pull LE high
 	HAL_GPIO_WritePin(MAX_LE_GPIO_Port, MAX_LE_Pin, 1);
-	DWT_Delay_us(1);
 }
 
 // Readback register 6 from MAX2871. Requires MUX to be set in readback mode (0xC)
@@ -141,9 +138,7 @@ uint32_t max2871SpiRead(void)
 	for (int8_t bit = 32; bit > 0; bit--)
 	{
 		HAL_GPIO_WritePin(MAX_CLK_GPIO_Port, MAX_CLK_Pin, 1);
-		DWT_Delay_us(1);
 		dataReturn |= HAL_GPIO_ReadPin(MAX_MUX_GPIO_Port, MAX_MUX_Pin) << bit;
-		DWT_Delay_us(1);
 		HAL_GPIO_WritePin(MAX_CLK_GPIO_Port, MAX_CLK_Pin, 0);
 	}
 
@@ -178,7 +173,7 @@ void max2871SetFrequency(float mhz, uint8_t intN, struct MAX2871Struct *max2871S
 		diva = 2;
 	else if (mhz < 3000)
 		diva = 1;
-	else if (mhz < 6000)
+	else if (mhz <= 6000)
 		diva = 0;
 	else
 		printUSB((char *) "+ Bad input frequency to max2871SetFrequency\r\n");

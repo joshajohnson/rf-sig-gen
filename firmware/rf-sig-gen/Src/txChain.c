@@ -17,10 +17,6 @@ char buf[128] = "";
 // Sets up output for given frequency and power level
 void sigGen(float frequency, float power, struct MAX2871Struct *max2871Status, struct txStruct *txStatus)
 {
-	// Ensure RF Enabled
-	max2871RFEnable(max2871Status);
-	enablePA(txStatus);
-
 	max2871SetFrequency(frequency,FRAC_N,max2871Status);
 	stpSpiTx(freqToLed(frequency));
 
@@ -37,21 +33,16 @@ void sigGen(float frequency, float power, struct MAX2871Struct *max2871Status, s
 void sweep(float lowerFreq, float higherFreq, float numSteps, float power, float sweepTime, struct MAX2871Struct *max2871Status, struct txStruct *txStatus)
 {
 	float stepSize = ((higherFreq - lowerFreq) / numSteps);
-	uint32_t delay = sweepTime * 1000000 / numSteps; 	// Delay is in uS
+	int32_t delay = (sweepTime * 1000000 / numSteps) - 10; 	// Delay is in uS
+	if (delay < 0) delay = 0;
 
 	float currentFrequency = lowerFreq;
 
-	while (currentFrequency <= higherFreq)
+	while ((currentFrequency <= higherFreq) && (RX_FIFO.dataReady == 0))
 	{
 		sigGen(currentFrequency, power, max2871Status, txStatus);
-
-		char txStr[128] = "";
-		sprintf((char *)txStr, "> Frequency = %0.3f MHz, Power = %0.2f dBm\n", max2871Status->frequency, txStatus->measOutputPower);
-		printUSB(txStr);
-		
 		DWT_Delay_us(delay);
 		currentFrequency += stepSize;
-		if (RX_FIFO.dataReady == 1) break;
 
 	}
 }
@@ -74,23 +65,18 @@ void setAttenuation(float atten, struct txStruct *txStatus)
 
 	// Init attenuator LE high
 	HAL_GPIO_WritePin(ATTEN_LE_GPIO_Port,ATTEN_LE_Pin,1);
-	DWT_Delay_us(1);
 	// Begin by bringing LE low
 	HAL_GPIO_WritePin(ATTEN_LE_GPIO_Port, ATTEN_LE_Pin, 0);
-	DWT_Delay_us(1);
 
 	// Transfer the bits
 	for (uint8_t i = 6; i > 0 ; i--)
 	{
 		HAL_GPIO_WritePin(ATTEN_SDO_GPIO_Port, ATTEN_SDO_Pin, bitSequence & (1 << i));
-		DWT_Delay_us(1);
 		HAL_GPIO_WritePin(ATTEN_CLK_GPIO_Port, ATTEN_CLK_Pin, 1);
-		DWT_Delay_us(1);
 		HAL_GPIO_WritePin(ATTEN_CLK_GPIO_Port, ATTEN_CLK_Pin, 0);
 	}
 	HAL_GPIO_WritePin(ATTEN_SDO_GPIO_Port, ATTEN_SDO_Pin, 0);
 	// Shift data in by bringing LE high
-	DWT_Delay_us(1);
 	HAL_GPIO_WritePin(ATTEN_LE_GPIO_Port, ATTEN_LE_Pin, 1);
 }
 
@@ -115,7 +101,6 @@ void setOutputPower(float setPower, struct MAX2871Struct *max2871Status, struct 
 			if (txStatus->attenuation < MAX_ATTENUATION)
 			{
 				setAttenuation(txStatus->attenuation += STEP_ATTENUATION, txStatus);
-				DWT_Delay_us(1);
 				readAD8319(txStatus);
 				printUSB((char *) "+ Adjusting Attenuation!\r\n");
 			}
@@ -135,7 +120,6 @@ void setOutputPower(float setPower, struct MAX2871Struct *max2871Status, struct 
 			if (txStatus->attenuation > MIN_ATTENUATION)
 			{
 				setAttenuation(txStatus->attenuation -= STEP_ATTENUATION, txStatus);
-				DWT_Delay_us(1);
 				readAD8319(txStatus);
 				printUSB((char *) "+ Adjusting Attenuation!\r\n");
 			}
@@ -172,7 +156,7 @@ float readAD8319(struct txStruct *txStatus)
 		{
 			adcValue += HAL_ADC_GetValue(&hadc1);
 		}
-		HAL_Delay(1);
+		DWT_Delay_us(1);
 	}
 
 	adcValue /= 8; // Divide by 8 to get average value

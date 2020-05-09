@@ -66,14 +66,14 @@ void commandParser(struct MAX2871Struct *max2871Status, struct txStruct *txStatu
 	{
 		sigGen(atof(args[0]), atof(args[1]), max2871Status, txStatus);
 
-		sprintf((char *)txStr, "> Signal Generator: Frequency = %0.3f MHz, Power = %0.2f dBm\n", max2871Status->frequency, txStatus->measOutputPower);
-		printUSB(txStr);
+		// sprintf((char *)txStr, "> Signal Generator: Frequency = %0.3f MHz, Power = %0.2f dBm\n", max2871Status->frequency, txStatus->measOutputPower);
+		// printUSB(txStr);
 	}
 
 	else if (strncmp("sweep", command, 5) == 0)
 	{
-		sprintf((char *)txStr, "> Sweep: Start = %0.2f MHz, fFinish = %0.2f dBm Power = %0.2f dBm\n", atof(args[0]), atof(args[1]), atof(args[2]));
-		printUSB(txStr);
+		// sprintf((char *)txStr, "> Sweep: Start = %0.2f MHz, fFinish = %0.2f dBm Power = %0.2f dBm\n", atof(args[0]), atof(args[1]), atof(args[2]));
+		// printUSB(txStr);
 
 		while (RX_FIFO.dataReady == 0)
 		{
