@@ -64,7 +64,18 @@ void commandParser(struct MAX2871Struct *max2871Status, struct txStruct *txStatu
 
 	if (strncmp("sigGen", command, 6) == 0)
 	{
-		sigGen(atof(args[0]), atof(args[1]), max2871Status, txStatus);
+		if (strncmp("MIN", args[1], 3) == 0)
+		{
+			sigGen(atof(args[0]), 0, max2871Status, txStatus);
+			setAttenuation(MAX_ATTENUATION, txStatus);
+			max2871SetPower(-4, max2871Status);
+		}
+		else
+		{
+			sigGen(atof(args[0]), atof(args[1]), max2871Status, txStatus);
+		}
+		
+		
 
 		// sprintf((char *)txStr, "> Signal Generator: Frequency = %0.3f MHz, Power = %0.2f dBm\n", max2871Status->frequency, txStatus->measOutputPower);
 		// printUSB(txStr);
@@ -86,6 +97,10 @@ void commandParser(struct MAX2871Struct *max2871Status, struct txStruct *txStatu
 		max2871RFEnable(max2871Status);
 		enablePA(txStatus);
 		printUSB("> RF Enabled \r\n");
+
+		readAD8319(txStatus);
+		sprintf((char *)txStr, "? %0.3f %0.2f \n", max2871Status->frequency, txStatus->measOutputPower);
+		printUSB(txStr);
 	}
 
 	else if (strncmp("disableRF", command, 9) == 0)
@@ -93,6 +108,10 @@ void commandParser(struct MAX2871Struct *max2871Status, struct txStruct *txStatu
 		max2871RFDisable(max2871Status);
 		disablePA(txStatus);
 		printUSB("> RF Disabled \r\n");
+
+		readAD8319(txStatus);
+		sprintf((char *)txStr, "? %0.3f %0.2f \n", max2871Status->frequency, txStatus->measOutputPower);
+		printUSB(txStr);
 	}
 
 	else if (strncmp("status", command, 6) == 0)
