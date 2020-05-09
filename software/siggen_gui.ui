@@ -105,7 +105,7 @@
      <rect>
       <x>130</x>
       <y>100</y>
-      <width>81</width>
+      <width>91</width>
       <height>21</height>
      </rect>
     </property>
@@ -136,7 +136,7 @@
      <rect>
       <x>130</x>
       <y>130</y>
-      <width>81</width>
+      <width>91</width>
       <height>21</height>
      </rect>
     </property>
@@ -156,7 +156,7 @@
    <widget class="QLCDNumber" name="output_siggen_freq">
     <property name="geometry">
      <rect>
-      <x>220</x>
+      <x>230</x>
       <y>100</y>
       <width>111</width>
       <height>23</height>
@@ -620,7 +620,7 @@
    <widget class="QLCDNumber" name="output_siggen_power">
     <property name="geometry">
      <rect>
-      <x>220</x>
+      <x>230</x>
       <y>130</y>
       <width>111</width>
       <height>23</height>
@@ -1256,7 +1256,7 @@
    <widget class="QComboBox" name="input_led_mode">
     <property name="geometry">
      <rect>
-      <x>130</x>
+      <x>140</x>
       <y>160</y>
       <width>201</width>
       <height>21</height>

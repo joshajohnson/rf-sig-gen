@@ -7,7 +7,10 @@ from PyQt5 import QtWidgets, uic, QtCore
 
 
 class SignalGenerator:
+    """ Class to handle configuration of the Signal Generator. Parses CLI args to send correct info to the SigGen. """
+
     def __init__(self):
+
         # Serial things
         self.com_port = None
         self.connected = False
@@ -15,8 +18,6 @@ class SignalGenerator:
         self.serial_io = None
         self.serial_recv_line = None
         self.serial_user_data = []
-        self.serial_rf_data = []
-        self.serial_log_data = []
 
         # Argparse
         self.parser = None
@@ -64,10 +65,11 @@ class SignalGenerator:
             self.serial_io = io.TextIOWrapper(
                 io.BufferedRWPair(self.serial, self.serial))
 
+            # #self.serial.open()
             self.serial_io.write("WHOAMI" + "\r\n")
             self.serial_io.flush()
             self.serial_recv_line = self.serial_io.readline().rstrip().lstrip("> ")
-            self.serial.close()
+            # self.serial.close()
 
             # Confirm WHOAMI is correct
             if self.serial_recv_line == "Josh's Signal Generator!":
@@ -77,84 +79,65 @@ class SignalGenerator:
             print("Could not connect.")
 
     def connect(self, com_port=None):
-        
         """ Finds and Connects to Signal Generator """
         if self.com_port == None:
             self.find_serial()
         self.connect_serial(com_port)
 
     def check_connection(self):
+        """ Checks if the SigGen is connected, and attemps to connect if not. """
+
         try:
             if self.connected:
-                self.serial.open()
+                # self.serial.open()
                 self.serial_io.write("WHOAMI" + "\r\n")
                 self.serial_io.flush()
-                self.serial.close()
                 ret_val = self.serial_io.readline().rstrip().lstrip("> ")
+                # self.serial.close()
                 if ret_val == "Josh's Signal Generator!":
                     self.connected = True
-                    return 0
         except:
             pass
         self.connect()
-            
+
     def send_data(self, data):
         """ Sends data to Signal Generator """
         if self.connected:
-            self.serial.open()
+            # self.serial.open()
             self.serial_io.write(data + "\r\n")
             self.serial_io.flush()
-            self.serial.close()
+            # self.serial.close()
+            print(data)
         else:
             print("Connect to Device before use.")
 
-    def get_data(self, type=None, single_line=False):
-        """ Gets multiple user directed lines from Signal Generator, until timeout is hit """
+    def get_data(self):
+        """ Gets multiple lines from Signal Generator, until timeout is hit """
+
         if self.connected:
             global meas_freq
             global meas_power
 
-            self.serial_user_data = []
-            self.serial_rf_data = []
+            # self.serial.open()
 
-            self.serial.open()
-            raw_recv = self.serial_io.readline()
-            self.serial.close()
-
-            # only read a single line
-            if single_line:
-                return raw_recv.rstrip()
-
-            while (raw_recv != ""):
+            while (True):
                 gui.processEvents()
 
+                raw_recv = self.serial_io.readline()
+                if (raw_recv == ""):
+                    break
+
                 if raw_recv[0] == ">":
-                    self.serial_user_data.append(raw_recv.rstrip())
-                    if type == "user":
-                        print(self.serial_user_data[-1])
+                    print(raw_recv.rstrip())
                 if raw_recv[0] == "+":
-                    self.serial_log_data.append(raw_recv.rstrip())
-                    if type == "log":
-                        print(self.serial_log_data[-1])
+                    print(raw_recv.rstrip())
                 if raw_recv[0] == "?":
+                    print(raw_recv.rstrip())
                     # Send data for updating display
                     meas_freq = raw_recv.split(" ")[1]
                     meas_power = raw_recv.split(" ")[2]
 
-                    self.serial_rf_data.append(raw_recv.rstrip())
-                    if type == "rf":
-                        print(self.serial_rf_data[-1])
-
-                self.serial.open()
-                raw_recv = self.serial_io.readline()
-                self.serial.close()
-
-            if type == "user":
-                return self.serial_user_data
-            if type == "log":
-                return self.serial_log_data
-            if type == "rf":
-                return self.serial_log_data
+            # self.serial.close()
 
     def talk(self):
         """ Transparently opens a COM port between user and Signal Generator """
@@ -172,14 +155,19 @@ class SignalGenerator:
                 [print(line) for line in self.serial_user_data]
 
     def config_sig_gen(self, frequency=None, power=None):
+        """ Sets SigGen params """
+
         if frequency is None:
             frequency = self.frequency
         if power is None:
             power = self.power
 
         self.send_data("sigGen({},{})".format(frequency, power))
+        self.get_data()
 
     def config_sweep(self, start_freq=None, stop_freq=None, power=None, sweep_steps=None, time=None):
+        """ Configures sweep params."""
+
         if start_freq is None:
             start_freq = self.sweep_start
         if stop_freq is None:
@@ -193,16 +181,23 @@ class SignalGenerator:
 
         self.send_data("sweep({},{},{},{},{})".format(
             start_freq, stop_freq, sweep_steps, power, time))
+        self.get_data()
 
     def config_RF(self, enabled=False):
+        """ Enables / Disables RF output """
+
         if enabled:
             self.rf_enabled = True
             self.send_data("enableRF")
+            self.get_data()
         else:
             self.rf_enabled = False
             self.send_data("disableRF")
+            self.get_data()
 
     def config_leds(self, led_display=None):
+        """ Configures the all important LED patterns """
+
         available_displays = ["kitt", "binary", "rainbow"]
 
         if led_display == "off":
@@ -214,6 +209,7 @@ class SignalGenerator:
                 print("LED option not found.")
 
     def parse_inputs(self, user_input):
+        """ Parses inputs to the Signal Generator """
 
         self.parser = argparse.ArgumentParser(
             description="Controls RF Signal Generator")
@@ -242,12 +238,12 @@ class SignalGenerator:
         [self.user_input.append(arg) for arg in user_input.split(" ")]
         self.args = self.parser.parse_args(self.user_input)
 
+        self.updated = False
+
         # determine generator or sweep mode
         if self.args.mode == "g":
-            self.updated = "config"
             self.mode = "generator"
         if self.args.mode == "w":
-            self.updated = "config"
             self.mode = "sweep"
 
         # store args in variables
@@ -256,7 +252,7 @@ class SignalGenerator:
             self.frequency = self.args.frequency
 
         if self.args.power is not None:
-            self.updated = "config"
+            self.updated = "power"
             self.power = self.args.power
 
         if self.args.start_freq is not None and self.mode == "sweep":
@@ -289,27 +285,32 @@ class SignalGenerator:
         self.send_commands()
 
     def send_commands(self):
+        """ Sends commands to SigGen depending on what has been updated """
+
         if self.updated == "rf":
             self.config_RF(self.rf_enabled)
-        elif self.updated == "led":
+
+        if self.updated == "led":
             self.config_leds(self.led_display)
 
-        elif self.mode == "generator" and self.rf_enabled and (self.updated == "generator" or self.updated == "config"):
+        if self.mode == "generator" and self.rf_enabled and (self.updated == "generator" or self.updated == "power"):
             self.config_sig_gen()
 
-        elif self.mode == "sweep" and self.rf_enabled and (self.updated == "sweep" or self.updated == "config"):
+        if self.mode == "sweep" and self.rf_enabled and (self.updated == "sweep" or self.updated == "power"):
             self.config_sweep()
 
-        self.get_data(type=None, single_line=False)
-        self.updated = False
+        self.get_data()
 
 
 class Ui(QtWidgets.QMainWindow):
+    """ Class for all GUI related functions """
+
     def __init__(self):
         # Call the inherited classes __init__ method
         super(Ui, self).__init__()
         uic.loadUi('siggen_gui.ui', self)  # Load the .ui file
 
+        # Default mode
         self.mode = "siggen"
 
         # Buttons
@@ -347,7 +348,8 @@ class Ui(QtWidgets.QMainWindow):
 
         self.input_siggen_power = self.findChild(
             QtWidgets.QDoubleSpinBox, "input_siggen_power")
-        self.input_siggen_power.valueChanged.connect(lambda: self.update_power("siggen", self.input_siggen_power.value()))
+        self.input_siggen_power.valueChanged.connect(
+            lambda: self.update_power("siggen", self.input_siggen_power.value()))
 
         # Sweep
         self.input_sweep_start = self.findChild(
@@ -362,7 +364,8 @@ class Ui(QtWidgets.QMainWindow):
 
         self.input_sweep_power = self.findChild(
             QtWidgets.QDoubleSpinBox, "input_sweep_power")
-        self.input_sweep_power.valueChanged.connect(lambda: self.update_power("sweep", self.input_sweep_power.value()))
+        self.input_sweep_power.valueChanged.connect(
+            lambda: self.update_power("sweep", self.input_sweep_power.value()))
 
         self.input_sweep_stop = self.findChild(
             QtWidgets.QDoubleSpinBox, "input_sweep_stop")
@@ -385,32 +388,43 @@ class Ui(QtWidgets.QMainWindow):
         self.display_timer.start(50)
         self.display_timer.timeout.connect(self.update_display)
 
+        # Connect and init SigGen
         self.update_connection()
 
         self.show()  # Show the GUI
 
     def enable_rf(self):
+        """ Return correct val for SigGen based on state of check box """
+
         if self.input_rf_enabled.isChecked():
             return 1
         else:
             return 0
 
     def update_display(self):
+        """ Updates current power and frequency on GUI. Called reguarly by PyQt interrupt"""
+
         self.output_siggen_freq.display(meas_freq)
         self.output_siggen_power.display(meas_power)
 
     def update_connection(self):
+        """ Checks connection and updates state of button accorindly """
+        # TODO: Call this function reguarly, will require firmware on SigGen to not halt upon console input
+
         sig_gen.check_connection()
         connection_status = "Connected" if sig_gen.connected == True else "Connect"
         self.input_connect.setText(connection_status)
 
         if sig_gen.connected and sig_gen.siggen_init == False:
             # Disable RF and send initial settings to sig gen
-            sig_gen.config_sig_gen(self.input_siggen_freq.value(), self.input_siggen_power.value())
+            sig_gen.config_sig_gen(
+                self.input_siggen_freq.value(), self.input_siggen_power.value())
             sig_gen.parse_inputs("--rf {}".format(self.enable_rf()))
-            sig_gen.siggen_init = True     
+            sig_gen.siggen_init = True
 
     def update_power(self, mode, power):
+        """ Updates the output power depending on mode. Required as CLI cannot differentiate between frequency and sweep power inputs """
+
         if mode == "siggen" and self.mode == "siggen":
             sig_gen.parse_inputs("--power {:.1f}".format(power))
 
@@ -418,30 +432,35 @@ class Ui(QtWidgets.QMainWindow):
             sig_gen.parse_inputs("--power {:.1f}".format(power))
 
     def set_sig_gen(self):
+        """ Configures SigGen settings"""
+
         self.mode = "siggen"
-        sig_gen.parse_inputs("--mode g")
-        lambda: sig_gen.parse_inputs(
-            "--frequency {:.3f}".format(self.input_siggen_freq.value()))
-        lambda: sig_gen.parse_inputs(
-            "--power {:.1f}".format(self.input_siggen_power.value()))
+        freq = self.input_siggen_freq.value()
+        power = self.input_siggen_power.value()
+        sig_gen.parse_inputs(
+            "--mode g --frequency {:.3f} --power {:.1f}".format(freq, power))
+
+        sig_gen.get_data()
 
     def set_sweep(self):
+        """ Configures sweep settings"""
+
         self.mode = "sweep"
-        sig_gen.parse_inputs("--mode w")
-        lambda: sig_gen.parse_inputs(
-            "--start {:.3f}".format(self.input_sweep_start.value()))
-        lambda: sig_gen.parse_inputs(
-            "--steps {:.0f}".format(self.input_sweep_steps.value()))
-        lambda: sig_gen.parse_inputs(
-            "--power {:.1f}".format(self.input_sweep_power.value()))
-        lambda: sig_gen.parse_inputs(
-            "--stop {:.3f}".format(self.input_sweep_stop.value()))
-        lambda: sig_gen.parse_inputs(
-            "--time {:.0f}".format(self.input_sweep_time.value()))
+        sweep_start = self.input_sweep_start.value()
+        sweep_steps = self.input_sweep_steps.value()
+        sweep_power = self.input_sweep_power.value()
+        sweep_time = self.input_sweep_time.value()
+        sweep_stop = self.input_sweep_stop.value()
+
+        sig_gen.parse_inputs("--mode w --start {:.3f} --stop {:.3f} --steps {:.0f} --power {:.1f} --time {:.0f}".format(
+            sweep_start, sweep_stop, sweep_steps, sweep_power, sweep_time))
+
+        sig_gen.get_data()
 
 
 if __name__ == '__main__':
 
+    # Globals used to update current frequency and power
     meas_freq = 0
     meas_power = 0
 
