@@ -65,7 +65,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>10</y>
+      <y>0</y>
       <width>331</width>
       <height>31</height>
      </rect>
@@ -1356,13 +1356,26 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>40</y>
+      <y>70</y>
       <width>101</width>
       <height>23</height>
      </rect>
     </property>
     <property name="text">
      <string>RF Enabled</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="input_connect">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>40</y>
+      <width>89</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Connect</string>
     </property>
    </widget>
   </widget>
