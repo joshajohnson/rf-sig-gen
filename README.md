@@ -5,7 +5,7 @@
 ## 23.5 - 6000 MHz MAX2871 based RF signal generator in an Adafruit Feather form factor.
 - MAX2871 23.5 - 6000 MHz Fractional/Integer-N Synthesizer/VCO
 - -35 to +15 dBm output power (-25 to +10 across entire frequency range)
-- Output power control with 0.5 dB steps
+- Output control within 0.5 dB, with closed loop feedback
 - GUI allowing easy control, including sweep capabilities
 - Adafruit Feather form factor
 - Firmware works with my [STM32F103 Feather](https://github.com/joshajohnson/stm32f103-feather)
