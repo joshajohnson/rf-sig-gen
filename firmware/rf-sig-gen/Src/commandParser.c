@@ -62,8 +62,10 @@ void commandParser(struct MAX2871Struct *max2871Status, struct txStruct *txStatu
 
 	// Find command based on command word, and call function
 
+	// Signal generator mode
 	if (strncmp("sigGen", command, 6) == 0)
 	{
+		// If set to min power, max attenuation and MAX2871 output power
 		if (strncmp("MIN", args[1], 3) == 0)
 		{
 			sigGen(atof(args[0]), 0, max2871Status, txStatus);
@@ -75,16 +77,15 @@ void commandParser(struct MAX2871Struct *max2871Status, struct txStruct *txStatu
 			sigGen(atof(args[0]), atof(args[1]), max2871Status, txStatus);
 		}
 		
-		
-
-		// sprintf((char *)txStr, "> Signal Generator: Frequency = %0.3f MHz, Power = %0.2f dBm\n", max2871Status->frequency, txStatus->measOutputPower);
-		// printUSB(txStr);
+		sprintf((char *)txStr, "> Signal Generator: Frequency = %0.3f MHz, Power = %0.2f dBm\n", max2871Status->frequency, txStatus->measOutputPower);
+		printUSB(txStr);
 	}
 
+	// Sweep frequencies
 	else if (strncmp("sweep", command, 5) == 0)
 	{
-		// sprintf((char *)txStr, "> Sweep: Start = %0.2f MHz, fFinish = %0.2f dBm Power = %0.2f dBm\n", atof(args[0]), atof(args[1]), atof(args[2]));
-		// printUSB(txStr);
+		sprintf((char *)txStr, "> Sweep: Start = %0.2f MHz, fFinish = %0.2f dBm Power = %0.2f dBm\n", atof(args[0]), atof(args[1]), atof(args[2]));
+		printUSB(txStr);
 
 		while (RX_FIFO.dataReady == 0)
 		{
@@ -110,7 +111,7 @@ void commandParser(struct MAX2871Struct *max2871Status, struct txStruct *txStatu
 		printUSB("> RF Disabled \r\n");
 
 		readAD8319(txStatus);
-		sprintf((char *)txStr, "? %0.3f %0.2f \n", max2871Status->frequency, txStatus->measOutputPower);
+		sprintf((char *)txStr, "? %0.3f %0.2f \n", max2871Status->frequency, -99.99);
 		printUSB(txStr);
 	}
 

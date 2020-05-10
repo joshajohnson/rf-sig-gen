@@ -118,7 +118,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    	  // Command Parser
+    // Wait for a command
 	  if (RX_FIFO.dataReady == 1)
 	  {
 		  commandParser(&max2871Status, &txStatus);

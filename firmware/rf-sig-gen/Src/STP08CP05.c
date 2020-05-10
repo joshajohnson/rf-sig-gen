@@ -1,5 +1,6 @@
 #include "STP08CP05.h"
 
+// Map frequency to how many leds are enabled
 uint8_t freqToLed (float frequency)
 {
     uint8_t leds;
@@ -34,13 +35,15 @@ void rainbow()
         for (uint8_t i = 0; i < 8; i++)
         {
             stpSpiTx(display |= (1 << i));
-            HAL_Delay(250);
+            HAL_Delay(100);
+            if (RX_FIFO.dataReady == 1) break;
         }
 
         for (uint8_t i = 0; i < 8; i++)
         {
             stpSpiTx(display &= ~(1 << i));
-            HAL_Delay(250);
+            HAL_Delay(100);
+            if (RX_FIFO.dataReady == 1) break;
         }
     }
 }
@@ -78,6 +81,7 @@ void binary()
     }
 }
 
+// Shift in LED values to driver
 void stpSpiTx(uint8_t leds)
 {
 	// Transfer the bits

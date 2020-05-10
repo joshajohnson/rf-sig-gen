@@ -6,7 +6,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
-#include "STP08CP05.h"d
+#include "STP08CP05.h"
 
 extern ADC_HandleTypeDef hadc1;
 
@@ -38,7 +38,7 @@ void sweep(float lowerFreq, float higherFreq, float numSteps, float power, float
 
 	float currentFrequency = lowerFreq;
 
-	while ((currentFrequency <= higherFreq) && (RX_FIFO.dataReady == 0))
+	while ((currentFrequency <= higherFreq + 0.1) && (RX_FIFO.dataReady == 0))
 	{
 		sigGen(currentFrequency, power, max2871Status, txStatus);
 		DWT_Delay_us(delay);
@@ -49,6 +49,7 @@ void sweep(float lowerFreq, float higherFreq, float numSteps, float power, float
 
 void txChainInit(struct MAX2871Struct *max2871Status, struct txStruct *txStatus)
 {
+	// init with lowest output power
 	max2871RFDisable(max2871Status);
 	disablePA(txStatus);
 	setAttenuation(MAX_ATTENUATION,txStatus);
@@ -84,10 +85,17 @@ void setAttenuation(float atten, struct txStruct *txStatus)
 // Changes attenuation until AD8319 reads correct value or runs out of attenuation.
 void setOutputPower(float setPower, struct MAX2871Struct *max2871Status, struct txStruct *txStatus)
 {
-	if (setPower >= 0)
+	// Change MAX2871 output power to get full range, along with attenuator to prevent spikes in output power, if moving above / below 0 dBm
+	if (setPower >= 0 && txStatus->setOutputPower < 0)
+	{
 		max2871SetPower(5, max2871Status);
-	else
+		setAttenuation(txStatus->attenuation + 9, txStatus);
+	}
+	else if (setPower < 0 && txStatus->setOutputPower > 0)
+	{
 		max2871SetPower(-4, max2871Status);
+		setAttenuation(txStatus->attenuation - 9, txStatus);
+	}
 
 	txStatus->setOutputPower = setPower;
 	readAD8319(txStatus);
@@ -112,7 +120,7 @@ void setOutputPower(float setPower, struct MAX2871Struct *max2871Status, struct 
 		}
 	}
 	// If power too low
-	else if (txStatus->measOutputPower < (txStatus->setOutputPower - STEP_ATTENUATION / 2))
+	if (txStatus->measOutputPower < (txStatus->setOutputPower - STEP_ATTENUATION / 2))
 	{
 		// While power too low
 		while (txStatus->measOutputPower < (txStatus->setOutputPower - STEP_ATTENUATION / 2))
@@ -134,8 +142,8 @@ void setOutputPower(float setPower, struct MAX2871Struct *max2871Status, struct 
 }
 
 // Sets power value in the txStatus struct
-// Accounts for losses before AD8319, however need to confirm through measurements
 // Returns voltage measured from the AD8319
+// TODO: Calibrate voltage to power conversion, requires test gear!
 float readAD8319(struct txStruct *txStatus)
 {
 	float voltage, power;
@@ -159,11 +167,11 @@ float readAD8319(struct txStruct *txStatus)
 		DWT_Delay_us(1);
 	}
 
-	adcValue /= 8; // Divide by 8 to get average value
+	adcValue /= 8; // Get average value
 
 	voltage = (VREF * adcValue) / NUM_STATES_12_BIT;	// Convert to voltage
 
-	power = -44.4 * voltage + 33; 				// Voltage to power at SMA
+	power = -44.4 * voltage + 33; 						// Voltage to power at SMA
 
 	txStatus->measOutputPower = power;
 
@@ -181,7 +189,6 @@ void disablePA(struct txStruct *txStatus)
 	HAL_GPIO_WritePin(PA_PWDN_GPIO_Port,PA_PWDN_Pin,1);
 	txStatus->paPwdn = 1;
 }
-
 
 void txChainPrintStatus(uint8_t verbose, struct txStruct *txStatus)
 {
