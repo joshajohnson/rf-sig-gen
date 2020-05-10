@@ -53,15 +53,14 @@ class SignalGenerator:
         else:
             print("Signal Generator found on port: {}".format(self.com_port))
 
-    def connect_serial(self, com_port=None):
+    def connect_serial(self):
         """ Connect to a Signal Generator """
-
-        # Connect to given COM port
-        if com_port is not None:
-            self.com_port = com_port
+        
+        sig_gen.siggen_init = False
+        self.find_serial()
 
         try:
-            self.serial = serial.Serial(self.com_port, 115200, timeout=0.1)
+            self.serial = serial.Serial(self.com_port, 115200, timeout=0.2)
             self.serial_io = io.TextIOWrapper(
                 io.BufferedRWPair(self.serial, self.serial))
 
@@ -69,7 +68,6 @@ class SignalGenerator:
             self.serial_io.write("WHOAMI" + "\r\n")
             self.serial_io.flush()
             self.serial_recv_line = self.serial_io.readline().rstrip().lstrip("> ")
-            # self.serial.close()
 
             # Confirm WHOAMI is correct
             if self.serial_recv_line == "Josh's Signal Generator!":
@@ -78,35 +76,34 @@ class SignalGenerator:
         except:
             print("Could not connect.")
 
-    def connect(self, com_port=None):
+    def connect(self):
         """ Finds and Connects to Signal Generator """
-        if self.com_port == None:
-            self.find_serial()
-        self.connect_serial(com_port)
+        self.connect_serial()
 
     def check_connection(self):
         """ Checks if the SigGen is connected, and attemps to connect if not. """
 
+        if self.serial: 
+            if self.serial.is_open:
+                self.serial.close()
+            self.connect_serial()
+
         try:
             if self.connected:
-                # self.serial.open()
                 self.serial_io.write("WHOAMI" + "\r\n")
                 self.serial_io.flush()
                 ret_val = self.serial_io.readline().rstrip().lstrip("> ")
-                # self.serial.close()
                 if ret_val == "Josh's Signal Generator!":
                     self.connected = True
         except:
             pass
-        self.connect()
+        self.connect_serial()
 
     def send_data(self, data):
         """ Sends data to Signal Generator """
         if self.connected:
-            # self.serial.open()
             self.serial_io.write(data + "\r\n")
             self.serial_io.flush()
-            # self.serial.close()
             print(data)
         else:
             print("Connect to Device before use.")
@@ -117,8 +114,6 @@ class SignalGenerator:
         if self.connected:
             global meas_freq
             global meas_power
-
-            # self.serial.open()
 
             while (True):
                 gui.processEvents()
@@ -137,13 +132,11 @@ class SignalGenerator:
                     meas_freq = raw_recv.split(" ")[1]
                     meas_power = raw_recv.split(" ")[2]
 
-            # self.serial.close()
-
     def talk(self):
         """ Transparently opens a COM port between user and Signal Generator """
 
         if not self.connected:
-            self.connect()
+            self.connect_serial()
 
         if self.connected:
             while True:
@@ -293,10 +286,10 @@ class SignalGenerator:
         if self.updated == "led":
             self.config_leds(self.led_display)
 
-        if self.mode == "generator" and self.rf_enabled and (self.updated == "generator" or self.updated == "power"):
+        if self.mode == "generator" and self.rf_enabled and (self.updated == "generator" or self.updated == "power" or self.updated == "rf"):
             self.config_sig_gen()
 
-        if self.mode == "sweep" and self.rf_enabled and (self.updated == "sweep" or self.updated == "power"):
+        if self.mode == "sweep" and self.rf_enabled and (self.updated == "sweep" or self.updated == "power" or self.updated == "rf"):
             self.config_sweep()
 
         self.get_data()
@@ -410,16 +403,20 @@ class Ui(QtWidgets.QMainWindow):
     def update_connection(self):
         """ Checks connection and updates state of button accorindly """
         # TODO: Call this function reguarly, will require firmware on SigGen to not halt upon console input
-
+        global meas_power
         sig_gen.check_connection()
+
         connection_status = "Connected" if sig_gen.connected == True else "Connect"
         self.input_connect.setText(connection_status)
 
         if sig_gen.connected and sig_gen.siggen_init == False:
             # Disable RF and send initial settings to sig gen
             sig_gen.config_sig_gen(
-                self.input_siggen_freq.value(), self.input_siggen_power.value())
+                self.input_siggen_freq.value(), "MIN")
+
             sig_gen.parse_inputs("--rf {}".format(self.enable_rf()))
+            sig_gen.get_data()
+            meas_power = -99.99
             sig_gen.siggen_init = True
 
     def update_power(self, mode, power):
