@@ -10,6 +10,7 @@
 - Adafruit Feather form factor
 - Firmware works with my [STM32F103 Feather](https://github.com/joshajohnson/stm32f103-feather)
 
+![GUI](docs/gui.png)
 ![GUI with hackrf_sweep spectrum view](docs/hackrf-sweep-433.png)
 
 ### TODO
