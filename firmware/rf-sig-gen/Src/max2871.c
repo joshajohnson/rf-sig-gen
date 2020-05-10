@@ -10,7 +10,7 @@
 
 #define MOD 4095
 #define STR1_SIZE 128
-uint8_t str1[STR1_SIZE] = "";
+char str1[STR1_SIZE] = "";
 
 struct MAX2871Struct max2871Status;
 
@@ -113,7 +113,7 @@ void max2871SpiWrite(uint32_t r)
 	// Transmit all the bits!
 	for (int8_t bit = 32; bit > 0; bit--)
 	{
-		HAL_GPIO_WritePin(MAX_DAT_GPIO_Port, MAX_DAT_Pin, ((r) & (1 << bit - 1)) ? 1 : 0);
+		HAL_GPIO_WritePin(MAX_DAT_GPIO_Port, MAX_DAT_Pin, ((r) & (1 << (bit - 1))) ? 1 : 0);
 		HAL_GPIO_WritePin(MAX_CLK_GPIO_Port, MAX_CLK_Pin, 1);
 		HAL_GPIO_WritePin(MAX_CLK_GPIO_Port, MAX_CLK_Pin, 0);
 	}
@@ -127,7 +127,7 @@ void max2871SpiWrite(uint32_t r)
 // Readback register 6 from MAX2871. Requires MUX to be set in readback mode (0xC)
 uint32_t max2871SpiRead(void)
 {
-	uint32_t dataReturn;
+	uint32_t dataReturn = 0;
 
 	max2871SpiWrite(0x06);
 
@@ -158,7 +158,7 @@ void max2871WriteRegisters(void)
 void max2871SetFrequency(float mhz, uint8_t intN, struct MAX2871Struct *max2871Status)
 {
 	// Determine DIVA
-	uint8_t  diva;
+	int8_t  diva = -1;
 	if ((mhz >= 23.5) &&  (mhz < 46.875))
 		diva = 7;
 	else if (mhz < 93.75)
@@ -176,7 +176,10 @@ void max2871SetFrequency(float mhz, uint8_t intN, struct MAX2871Struct *max2871S
 	else if (mhz <= 6000)
 		diva = 0;
 	else
+	{
 		printUSB((char *) "+ Bad input frequency to max2871SetFrequency\r\n");
+		return;
+	}
 
 	// Calculate fOUT
 	float fComp = 38.4;
@@ -278,7 +281,7 @@ void max2871SetPower(int8_t dbm, struct MAX2871Struct *max2871Status)
 			max2871Status->rfPower = 3;
 			break;
 		default:
-			printUSB((uint8_t *) "> Bad input power to max2871SetPower");
+			printUSB((char *) "> Bad input power to max2871SetPower");
 	}
 
 	max2871Set_APWR(max2871Status->rfPower);
@@ -302,20 +305,19 @@ void max2871PrintRegisters(void)
 	for (int8_t i = 0; i <= 5; i++)
 	{
 		txReg = max2871GetRegister(i);
-		sprintf((char *)str1, "> Register %d = 0x%x\n", i, (unsigned int) txReg);
+		sprintf(str1, "> Register %d = 0x%x\n", i, (unsigned int) txReg);
 		printUSB(str1);
 		HAL_Delay(10);
 
 	}
 
 	txReg = max2871SpiRead();
-	sprintf((char *)str1, "> Register 6 = 0x%x\n", (unsigned int) txReg);
+	sprintf(str1, "> Register 6 = 0x%x\n", (unsigned int) txReg);
 	printUSB(str1);
 }
 
 void max2871PrintStatus(uint8_t verbose, struct MAX2871Struct *max2871Status)
 {
-	uint8_t str1[128] = "";
 	int8_t powerArray[4] = {-4, -1, 2, 5};
 
 	printUSB("> ----  MAX2871  ----\n");

@@ -148,9 +148,6 @@ float readAD8319(struct txStruct *txStatus)
 {
 	float voltage, power;
 	uint32_t adcValue = 0;
-	uint32_t ch;
-	uint16_t retVal;
-
 
 	// Get a 8 sample average of the ADC data
 	for (uint8_t i = 8; i > 0; i--)

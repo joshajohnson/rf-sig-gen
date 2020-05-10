@@ -3,7 +3,7 @@
 // Map frequency to how many leds are enabled
 uint8_t freqToLed (float frequency)
 {
-    uint8_t leds;
+    uint8_t leds = 0;
 
     if (frequency < 23.50)
         leds = 0;
