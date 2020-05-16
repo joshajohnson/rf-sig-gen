@@ -86,7 +86,6 @@ class SignalGenerator:
         if self.serial:
             if self.serial.is_open:
                 self.serial.close()
-            self.connect_serial()
 
         try:
             if self.connected:
@@ -104,7 +103,8 @@ class SignalGenerator:
         if self.connected:
             self.serial_io.write(data + "\r\n")
             self.serial_io.flush()
-            # print(data)
+            if (verbosity >= 1): 
+                print(data)
         else:
             print("Connect to Device before use.")
 
@@ -122,15 +122,16 @@ class SignalGenerator:
                 if (raw_recv == ""):
                     break
 
-                # if raw_recv[0] == ">":
-                    # print(raw_recv.rstrip())
-                # if raw_recv[0] == "+":
-                    # print(raw_recv.rstrip())
+                if raw_recv[0] == ">" and verbosity >= 1:
+                    print(raw_recv.rstrip())
+                if raw_recv[0] == "+" and verbosity >= 3:
+                    print(raw_recv.rstrip())
                 if raw_recv[0] == "?":
-                    # print(raw_recv.rstrip())
                     # Send data for updating display
                     meas_freq = raw_recv.split(" ")[1]
                     meas_power = raw_recv.split(" ")[2]
+                    if verbosity >= 2:
+                        print(raw_recv.rstrip())
 
     def talk(self):
         """ Transparently opens a COM port between user and Signal Generator """
@@ -457,12 +458,28 @@ class Ui(QtWidgets.QMainWindow):
 
 if __name__ == '__main__':
 
+    # Used to set level of info printed to termainal
+    # Set between 0 and 3
+    verbosity = 0
+
     # Globals used to update current frequency and power
     meas_freq = 0
     meas_power = 0
 
     sig_gen = SignalGenerator()
 
+    # Open GUI by default, CLI if "cli" passed in
+    if len(sys.argv) > 1:
+        if "cli" in sys.argv[2]:
+            sig_gen.connect()
+            while True:
+                try:
+                    user_input = input("+ ")
+                    sig_gen.parse_inputs(user_input)
+                except:
+                    pass
     gui = QtWidgets.QApplication(sys.argv)
     window = Ui()
     gui.exec_()
+
+
