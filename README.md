@@ -18,6 +18,10 @@
 #### Software
 - [ ] Display not updating if time between frequency steps in sweep is too long (greater than UART timeout)
 - [ ] Map keyboard to frequency and power adjustment in GUI
+- [ ] Stop multiple connection messages if connected once application open
+- [ ] Debug mode - control amount printed to terminal
+- [ ] CLI and GUI modes based on sys.argv
+- [ ] Fractional vs Int N selection
 
 #### Firmware
 - [ ] Calibrate output power

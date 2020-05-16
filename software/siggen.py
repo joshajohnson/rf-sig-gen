@@ -55,7 +55,7 @@ class SignalGenerator:
 
     def connect_serial(self):
         """ Connect to a Signal Generator """
-        
+
         sig_gen.siggen_init = False
         self.find_serial()
 
@@ -83,7 +83,7 @@ class SignalGenerator:
     def check_connection(self):
         """ Checks if the SigGen is connected, and attemps to connect if not. """
 
-        if self.serial: 
+        if self.serial:
             if self.serial.is_open:
                 self.serial.close()
             self.connect_serial()
@@ -104,7 +104,7 @@ class SignalGenerator:
         if self.connected:
             self.serial_io.write(data + "\r\n")
             self.serial_io.flush()
-            print(data)
+            # print(data)
         else:
             print("Connect to Device before use.")
 
@@ -122,12 +122,12 @@ class SignalGenerator:
                 if (raw_recv == ""):
                     break
 
-                if raw_recv[0] == ">":
-                    print(raw_recv.rstrip())
-                if raw_recv[0] == "+":
-                    print(raw_recv.rstrip())
+                # if raw_recv[0] == ">":
+                    # print(raw_recv.rstrip())
+                # if raw_recv[0] == "+":
+                    # print(raw_recv.rstrip())
                 if raw_recv[0] == "?":
-                    print(raw_recv.rstrip())
+                    # print(raw_recv.rstrip())
                     # Send data for updating display
                     meas_freq = raw_recv.split(" ")[1]
                     meas_power = raw_recv.split(" ")[2]
@@ -301,7 +301,7 @@ class Ui(QtWidgets.QMainWindow):
     def __init__(self):
         # Call the inherited classes __init__ method
         super(Ui, self).__init__()
-        uic.loadUi('siggen_gui.ui', self)  # Load the .ui file
+        uic.loadUi('gui.ui', self)  # Load the .ui file
 
         # Default mode
         self.mode = "siggen"

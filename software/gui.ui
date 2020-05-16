@@ -16,6 +16,10 @@
   <property name="windowTitle">
    <string>Josh's RF Signal Generator</string>
   </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>icon.png</normaloff>icon.png</iconset>
+  </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QLabel" name="label_measured">
     <property name="geometry">
